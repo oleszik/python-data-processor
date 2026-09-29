@@ -1,6 +1,7 @@
- Customer Name ,Order Count!, Region Code,Amount ($),Notes
- Alice Smith ,3, north ,125.50, first order
-Bob Jones,2,West,80,repeat customer
- Alice Smith ,3, north ,125.50, first order
-Casey Lee,, east ,42.25,
-   ,,,,
+ Customer Name ,Email,Order Count!, Region,Amount,Notes
+ Alice Smith ,alice@example.com,3,North,125.50, first order
+Bob Jones,not-an-email,2,West,80,repeat customer
+ Alice Smith ,alice@example.com,3,North,125.50, first order
+Casey Lee,,,-invalid,42.25,
+D,customer@example.com,-1,East,-5,invalid values
+   ,,,,,
