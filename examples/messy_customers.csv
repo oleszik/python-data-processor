@@ -1,0 +1,6 @@
+ Customer Name ,Order Count!, Region Code,Amount ($),Notes
+ Alice Smith ,3, north ,125.50, first order
+Bob Jones,2,West,80,repeat customer
+ Alice Smith ,3, north ,125.50, first order
+Casey Lee,, east ,42.25,
+   ,,,,
