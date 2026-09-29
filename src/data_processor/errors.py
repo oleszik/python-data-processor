@@ -8,3 +8,7 @@ class InputFileError(DataProcessorError):
 
 class UnsupportedFormatError(DataProcessorError):
     """Raised when an input or output file extension is unsupported."""
+
+
+class ConfigurationError(DataProcessorError):
+    """Raised when validation configuration is missing or invalid."""
