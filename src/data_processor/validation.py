@@ -5,6 +5,7 @@ import re
 from dataclasses import asdict, dataclass
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
@@ -21,15 +22,22 @@ class ValidationError:
     def to_dict(self) -> dict[str, object]:
         data = asdict(self)
         value = data["value"]
-        if pd.isna(value):
+        if _missing(value):
             data["value"] = None
-        elif not isinstance(value, (str, int, float, bool, type(None))):
-            data["value"] = str(value)
+        else:
+            if isinstance(value, np.generic):
+                value = value.item()
+            if not isinstance(value, (str, int, float, bool, type(None))):
+                value = str(value)
+            data["value"] = value
         return data
 
 
 def _missing(value: object) -> bool:
-    return value is None or (not isinstance(value, (list, dict)) and bool(pd.isna(value)))
+    if value is None:
+        return True
+    missing = pd.isna(value)
+    return bool(missing) if pd.api.types.is_scalar(missing) else False
 
 
 def _number(value: object, integer: bool = False) -> float | int | None:
@@ -46,8 +54,12 @@ def _number(value: object, integer: bool = False) -> float | int | None:
     return int(number) if integer else number
 
 
-def _error(row: int, column: str, value: object, rule: str, message: str) -> ValidationError:
-    return ValidationError(row=row, column=column, value=value, rule=rule, message=message)
+def _error(
+    row: int, column: str, value: object, rule: str, message: str
+) -> ValidationError:
+    return ValidationError(
+        row=row, column=column, value=value, rule=rule, message=message
+    )
 
 
 def validate_dataframe(
@@ -60,7 +72,15 @@ def validate_dataframe(
             value = record[column] if column in dataframe.columns else None
             if _missing(value):
                 if rules.get("required"):
-                    errors.append(_error(row_number, column, value, "required", f"{column} is required"))
+                    errors.append(
+                        _error(
+                            row_number,
+                            column,
+                            value,
+                            "required",
+                            f"{column} is required",
+                        )
+                    )
                 continue
 
             kind = rules.get("type")
@@ -68,29 +88,96 @@ def validate_dataframe(
             if kind == "integer":
                 numeric = _number(value, integer=True)
                 if numeric is None:
-                    errors.append(_error(row_number, column, value, "type", f"{column} must be an integer"))
+                    errors.append(
+                        _error(
+                            row_number,
+                            column,
+                            value,
+                            "type",
+                            f"{column} must be an integer",
+                        )
+                    )
             elif kind == "float":
                 numeric = _number(value)
                 if numeric is None:
-                    errors.append(_error(row_number, column, value, "type", f"{column} must be a number"))
+                    errors.append(
+                        _error(
+                            row_number,
+                            column,
+                            value,
+                            "type",
+                            f"{column} must be a number",
+                        )
+                    )
             elif kind == "email" and not EMAIL_RE.fullmatch(str(value).strip()):
-                errors.append(_error(row_number, column, value, "type", f"{column} must be a valid email"))
+                errors.append(
+                    _error(
+                        row_number,
+                        column,
+                        value,
+                        "type",
+                        f"{column} must be a valid email",
+                    )
+                )
             elif kind == "string" and not isinstance(value, str):
-                errors.append(_error(row_number, column, value, "type", f"{column} must be a string"))
+                errors.append(
+                    _error(
+                        row_number, column, value, "type", f"{column} must be a string"
+                    )
+                )
 
-            if numeric is None and kind in {"integer", "float"}:
-                numeric = _number(value, integer=kind == "integer")
             if numeric is not None:
                 if "min" in rules and numeric < rules["min"]:
-                    errors.append(_error(row_number, column, value, "min", f"{column} must be at least {rules['min']}"))
+                    errors.append(
+                        _error(
+                            row_number,
+                            column,
+                            value,
+                            "min",
+                            f"{column} must be at least {rules['min']}",
+                        )
+                    )
                 if "max" in rules and numeric > rules["max"]:
-                    errors.append(_error(row_number, column, value, "max", f"{column} must be at most {rules['max']}"))
+                    errors.append(
+                        _error(
+                            row_number,
+                            column,
+                            value,
+                            "max",
+                            f"{column} must be at most {rules['max']}",
+                        )
+                    )
 
-            text = str(value)
-            if "min_length" in rules and len(text) < rules["min_length"]:
-                errors.append(_error(row_number, column, value, "min_length", f"{column} is too short"))
-            if "max_length" in rules and len(text) > rules["max_length"]:
-                errors.append(_error(row_number, column, value, "max_length", f"{column} is too long"))
+            if "min_length" in rules or "max_length" in rules:
+                text = str(value)
+                if "min_length" in rules and len(text) < rules["min_length"]:
+                    errors.append(
+                        _error(
+                            row_number,
+                            column,
+                            value,
+                            "min_length",
+                            f"{column} is too short",
+                        )
+                    )
+                if "max_length" in rules and len(text) > rules["max_length"]:
+                    errors.append(
+                        _error(
+                            row_number,
+                            column,
+                            value,
+                            "max_length",
+                            f"{column} is too long",
+                        )
+                    )
             if "allowed" in rules and value not in rules["allowed"]:
-                errors.append(_error(row_number, column, value, "allowed", f"{column} is not an allowed value"))
+                errors.append(
+                    _error(
+                        row_number,
+                        column,
+                        value,
+                        "allowed",
+                        f"{column} is not an allowed value",
+                    )
+                )
     return errors

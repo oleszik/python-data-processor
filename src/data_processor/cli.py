@@ -11,7 +11,10 @@ from data_processor.errors import DataProcessorError
 from data_processor.io import export_dataset, load_dataset
 from data_processor.reporting import build_summary, format_summary
 from data_processor.validation import validate_dataframe
-from data_processor.validation_reporting import build_validation_report, write_validation_report
+from data_processor.validation_reporting import (
+    build_validation_report,
+    write_validation_report,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +29,21 @@ def build_parser() -> argparse.ArgumentParser:
         description="Inspect, clean, and optionally validate CSV or XLSX datasets.",
     )
     parser.add_argument("input", type=Path, help="Input .csv or .xlsx file")
-    parser.add_argument("--output", type=Path, required=True, help="Output .csv or .xlsx file")
-    parser.add_argument("--config", type=Path, help="YAML file containing column validation rules")
-    parser.add_argument("--report", type=Path, help="Write a JSON validation report (requires --config)")
-    parser.add_argument("--missing", choices=("keep", "drop", "fill"), default="keep", help="Missing-value strategy (default: keep)")
+    parser.add_argument(
+        "--output", type=Path, required=True, help="Output .csv or .xlsx file"
+    )
+    parser.add_argument(
+        "--config", type=Path, help="YAML file containing column validation rules"
+    )
+    parser.add_argument(
+        "--report", type=Path, help="Write a JSON validation report (requires --config)"
+    )
+    parser.add_argument(
+        "--missing",
+        choices=("keep", "drop", "fill"),
+        default="keep",
+        help="Missing-value strategy (default: keep)",
+    )
     parser.add_argument("--fill-value", help="Value used by --missing fill")
     return parser
 
@@ -46,13 +60,18 @@ def main(argv: list[str] | None = None) -> int:
     try:
         original = load_dataset(args.input)
         logger.info("Loaded %s", inspect_dataset(original))
-        cleaned, stats = clean_data(original, missing_strategy=args.missing, fill_value=args.fill_value)
+        cleaned, stats = clean_data(
+            original, missing_strategy=args.missing, fill_value=args.fill_value
+        )
         validation_errors = []
         if args.config is not None:
             rules = load_validation_config(args.config)
             validation_errors = validate_dataframe(cleaned, rules)
             if args.report is not None:
-                write_validation_report(build_validation_report(len(cleaned), validation_errors), args.report)
+                write_validation_report(
+                    build_validation_report(len(cleaned), validation_errors),
+                    args.report,
+                )
 
         output_path = export_dataset(cleaned, args.output)
         summary = build_summary(
@@ -68,6 +87,9 @@ def main(argv: list[str] | None = None) -> int:
 
     print(format_summary(summary))
     if validation_errors:
-        print(f"Validation completed with {len(validation_errors)} error(s).", file=sys.stderr)
+        print(
+            f"Validation completed with {len(validation_errors)} error(s).",
+            file=sys.stderr,
+        )
         return EXIT_VALIDATION_ERROR
     return EXIT_SUCCESS
