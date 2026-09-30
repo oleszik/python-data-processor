@@ -1,0 +1,26 @@
+columns:
+  customer_name:
+    required: true
+    type: string
+    min_length: 2
+    max_length: 80
+  email:
+    required: true
+    type: email
+  order_count:
+    required: true
+    type: integer
+    min: 0
+    max: 1000
+  region:
+    required: true
+    allowed:
+      - North
+      - South
+      - East
+      - West
+  amount:
+    required: true
+    type: float
+    min: 0
+    max: 10000

@@ -1,0 +1,78 @@
+{
+  "total_rows_processed": 6,
+  "valid_rows": 2,
+  "invalid_rows": 4,
+  "total_validation_errors": 9,
+  "errors_by_column": {
+    "amount": 1,
+    "customer_name": 1,
+    "email": 2,
+    "order_count": 3,
+    "region": 2
+  },
+  "errors": [
+    {
+      "row": 4,
+      "column": "email",
+      "value": "not-an-email",
+      "rule": "type",
+      "message": "email must be a valid email"
+    },
+    {
+      "row": 5,
+      "column": "email",
+      "value": null,
+      "rule": "required",
+      "message": "email is required"
+    },
+    {
+      "row": 5,
+      "column": "order_count",
+      "value": null,
+      "rule": "required",
+      "message": "order_count is required"
+    },
+    {
+      "row": 5,
+      "column": "region",
+      "value": "N<unknown>",
+      "rule": "allowed",
+      "message": "region is not an allowed value"
+    },
+    {
+      "row": 6,
+      "column": "customer_name",
+      "value": "D",
+      "rule": "min_length",
+      "message": "customer_name is too short"
+    },
+    {
+      "row": 6,
+      "column": "order_count",
+      "value": -1.0,
+      "rule": "min",
+      "message": "order_count must be at least 0"
+    },
+    {
+      "row": 6,
+      "column": "amount",
+      "value": -5.0,
+      "rule": "min",
+      "message": "amount must be at least 0"
+    },
+    {
+      "row": 7,
+      "column": "order_count",
+      "value": 1201.0,
+      "rule": "max",
+      "message": "order_count must be at most 1000"
+    },
+    {
+      "row": 7,
+      "column": "region",
+      "value": "Central",
+      "rule": "allowed",
+      "message": "region is not an allowed value"
+    }
+  ]
+}

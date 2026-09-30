@@ -1,0 +1,9 @@
+ Customer Name ,Email,Order Count!, Region,Amount,Notes
+ Riley Morgan ,riley.morgan@example.test,4,North,245.50, repeat buyer
+Sam Rivera,sam.rivera@example.test,2,West,80.00,first purchase
+ Riley Morgan ,riley.morgan@example.test,4,North,245.50, repeat buyer
+Taylor Brooks,not-an-email,3,South,60.00,invalid email
+Casey Patel,,,N<unknown>,42.25,missing email and order count
+D,devon@example.test,-1,East,-5.00,negative values and short name
+Jamie Park,jamie.park@example.test,1201,Central,100.00,over limit and invalid region
+,,,,,

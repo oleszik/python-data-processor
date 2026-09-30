@@ -8,6 +8,17 @@ a report that makes exceptions easy to review.
 **Messy CSV/XLSX in → cleaned CSV/XLSX + visual HTML report out.** Run it on one
 file or point it at a folder to process a batch.
 
+## Portfolio demo
+
+See a complete, reproducible customer-data cleanup without installing the tool:
+[messy input CSV](examples/showcase/input/messy_customers.csv) →
+[cleaned CSV](examples/showcase/output/cleaned_customers.csv) →
+[HTML validation report](examples/showcase/output/customer_validation_report.html)
+and [JSON results](examples/showcase/output/customer_validation_report.json).
+The [showcase guide](examples/showcase/README.md) explains the scenario, actual
+results, and exact command. GitHub displays HTML as source; download the report
+and open it locally in a browser to view the self-contained design.
+
 ## Features
 
 - Load and export CSV and XLSX files.
@@ -21,31 +32,10 @@ file or point it at a folder to process a batch.
 
 ## See it in action
 
-The included [messy customer dataset](examples/messy_customers.csv) has inconsistent
-headers, extra whitespace, duplicate and empty rows, and validation problems.
-The processor normalizes and cleans the data without hiding invalid records:
-
-| Before | After cleaning |
-| --- | --- |
-| ` Customer Name ` | `customer_name` |
-| ` Alice Smith ` | `Alice Smith` |
-| Duplicate Alice row | Removed |
-| Blank row | Removed |
-| `not-an-email` | Kept and flagged in the report |
-
-Run the example from the repository root:
-
-```bash
-python -m data_processor examples/messy_customers.csv \
-  --config examples/customer_validation.yaml \
-  --output cleaned_customers.csv \
-  --report validation_report.json \
-  --html-report customer_report.html
-```
-
-Open `customer_report.html` in a browser for an at-a-glance processing summary and
-a readable table of validation findings. The cleaned dataset and report are still
-written when data rows fail validation; the command then exits with code `2`.
+The included customer-data showcase demonstrates the complete input-to-report
+workflow with committed results that can be inspected directly in the repository.
+The cleaned dataset and reports are still written when rows fail validation; the
+command then exits with code `2`.
 
 ## Installation
 

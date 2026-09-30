@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data processing report</title>
+  <style>
+:root {
+  color-scheme: light;
+  --ink: #172b4d;
+  --muted: #61738a;
+  --line: #e3eaf2;
+  --blue: #2457d6;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #f4f7fb;
+  color: var(--ink);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+main { max-width: 1080px; margin: 0 auto; padding: 48px 24px 72px; }
+header {
+  padding: 34px;
+  border-radius: 20px;
+  color: white;
+  background: linear-gradient(125deg, #152c64, #2866e8);
+  box-shadow: 0 14px 36px #1d3f7c24;
+}
+.eyebrow {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: .78;
+}
+h1 { margin: 0; font-size: clamp(28px, 5vw, 42px); letter-spacing: -.03em; }
+header p:last-child { margin: 10px 0 0; opacity: .86; }
+.overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin: 22px 0 32px;
+}
+.overview div, .file-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 5px 18px #172b4d08;
+}
+.overview div { padding: 18px 20px; }
+.overview strong {
+  display: block;
+  color: var(--blue);
+  font-size: 27px;
+  line-height: 1.25;
+}
+.overview span, .metrics span { color: var(--muted); font-size: 13px; }
+.file-card { margin-top: 18px; padding: 24px; }
+h2 { margin: 0 0 18px; font-size: 21px; overflow-wrap: anywhere; }
+h3 { margin: 26px 0 10px; font-size: 16px; }
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+.metrics div {
+  min-height: 78px;
+  padding: 13px;
+  border-radius: 11px;
+  background: #f5f8fd;
+}
+.metrics strong { display: block; font-size: 20px; }
+.metrics span { display: block; }
+.output { margin: 17px 0 0; color: var(--muted); overflow-wrap: anywhere; }
+code { color: #31496a; }
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+  text-align: left;
+}
+th, td {
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+th {
+  background: #f5f8fd;
+  color: #526680;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+tr:last-child td { border-bottom: 0; }
+.empty { padding: 14px; color: var(--muted); text-align: center; }
+.failure {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff2f0;
+  color: #a12c22;
+}
+footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+@media (max-width: 600px) {
+  main { padding: 24px 14px 48px; }
+  header { padding: 25px; }
+  .file-card { padding: 18px; }
+}
+</style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Python Data Processor</p>
+      <h1>Dataset processing report</h1>
+      <p>Cleaning results and validation findings at a glance.</p>
+    </header>
+    <section class="overview" aria-label="Overall results">
+      <div><strong>1</strong><span>Files processed</span></div>
+      <div><strong>0</strong><span>Files failed</span></div>
+      <div><strong>6</strong><span>Clean rows written</span></div>
+      <div><strong>4</strong><span>Rows with issues</span></div>
+      <div><strong>9</strong><span>Validation findings</span></div>
+    </section>
+    <section class="file-card"><h2>messy_customers.csv</h2><div class="metrics"><div><strong>8</strong><span>Input rows</span></div><div><strong>6</strong><span>Output rows</span></div><div><strong>1</strong><span>Duplicates removed</span></div><div><strong>1</strong><span>Empty rows removed</span></div><div><strong>8</strong><span>Missing values before</span></div><div><strong>2</strong><span>Missing values after</span></div></div><p class="output">Cleaned file: <code>examples/showcase/output/cleaned_customers.csv</code></p><h3>Validation details</h3><div class="table-wrap"><table><thead><tr><th>Row</th><th>Column</th><th>Value</th><th>Rule</th><th>Issue</th></tr></thead><tbody><tr><td>4</td><td>email</td><td>not-an-email</td><td>type</td><td>email must be a valid email</td></tr><tr><td>5</td><td>email</td><td></td><td>required</td><td>email is required</td></tr><tr><td>5</td><td>order_count</td><td></td><td>required</td><td>order_count is required</td></tr><tr><td>5</td><td>region</td><td>N&lt;unknown&gt;</td><td>allowed</td><td>region is not an allowed value</td></tr><tr><td>6</td><td>customer_name</td><td>D</td><td>min_length</td><td>customer_name is too short</td></tr><tr><td>6</td><td>order_count</td><td>-1.0</td><td>min</td><td>order_count must be at least 0</td></tr><tr><td>6</td><td>amount</td><td>-5.0</td><td>min</td><td>amount must be at least 0</td></tr><tr><td>7</td><td>order_count</td><td>1201.0</td><td>max</td><td>order_count must be at most 1000</td></tr><tr><td>7</td><td>region</td><td>Central</td><td>allowed</td><td>region is not an allowed value</td></tr></tbody></table></div></section>
+    <footer>Generated by Python Data Processor · Self-contained report</footer>
+  </main>
+</body>
+</html>
