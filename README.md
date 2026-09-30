@@ -49,6 +49,12 @@ python -m data_processor examples/messy_customers.csv \
   --config examples/customer_validation.yaml \
   --output cleaned.csv \
   --report validation_report.json
+
+# Process a large CSV without loading all rows into memory
+python -m data_processor large_input.csv \
+  --config examples/customer_validation.yaml \
+  --output cleaned.csv \
+  --chunksize 10000
 ```
 
 Validation is applied to the cleaned dataset. Row-level validation errors do not stop processing or prevent cleaned output from being written.
@@ -95,4 +101,4 @@ ruff format --check .
 
 ## Next steps
 
-Potential extensions include streaming/chunked processing for very large files, richer structured logging, additional input formats, and configurable transformations.
+Potential extensions include richer structured logging, additional input formats, and configurable transformations. CSV inputs can be processed incrementally with `--chunksize`; chunked processing preserves global duplicate removal and is currently limited to CSV output.

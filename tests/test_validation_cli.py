@@ -97,3 +97,54 @@ def test_cli_rejects_output_overwriting_config(tmp_path: Path) -> None:
 
     assert main([str(data), "--config", str(config), "--output", str(config)]) == 1
     assert "required: true" in config.read_text(encoding="utf-8")
+
+
+def test_cli_chunked_processing_matches_regular_processing(tmp_path: Path) -> None:
+    data, config = _files(
+        tmp_path,
+        "email\nada@example.com\nnot-an-email\nada@example.com\n",
+    )
+    output = tmp_path / "clean.csv"
+    report = tmp_path / "report.json"
+
+    code = main(
+        [
+            str(data),
+            "--config",
+            str(config),
+            "--output",
+            str(output),
+            "--report",
+            str(report),
+            "--chunksize",
+            "1",
+        ]
+    )
+
+    assert code == 2
+    assert output.read_text(encoding="utf-8") == (
+        "email\nada@example.com\nnot-an-email\n"
+    )
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["total_rows_processed"] == 2
+    assert payload["invalid_rows"] == 1
+    assert payload["errors"][0]["row"] == 3
+
+
+def test_cli_rejects_non_csv_output_for_chunked_processing(tmp_path: Path) -> None:
+    data, config = _files(tmp_path, "email\nada@example.com\n")
+
+    assert (
+        main(
+            [
+                str(data),
+                "--config",
+                str(config),
+                "--output",
+                str(tmp_path / "clean.xlsx"),
+                "--chunksize",
+                "1",
+            ]
+        )
+        == 1
+    )

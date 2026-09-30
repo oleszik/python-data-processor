@@ -1,5 +1,6 @@
 """File loading and exporting for supported tabular formats."""
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import pandas as pd
@@ -34,6 +35,29 @@ def load_dataset(path: str | Path) -> pd.DataFrame:
             return pd.read_csv(source)
         return pd.read_excel(source, engine="openpyxl")
     except Exception as exc:
+        raise InputFileError(f"Could not read input file '{source}': {exc}") from exc
+
+
+def load_csv_chunks(path: str | Path, chunksize: int) -> Iterator[pd.DataFrame]:
+    """Return an iterator that loads a CSV file in bounded-size chunks."""
+    source = Path(path)
+    if source.exists() and not source.is_file():
+        raise InputFileError(f"Input path is not a file: {source}")
+    if _validate_format(source) != ".csv":
+        raise UnsupportedFormatError(
+            "Chunked processing is only supported for CSV files."
+        )
+    if not source.exists():
+        raise InputFileError(f"Input file does not exist: {source}")
+    try:
+        reader = pd.read_csv(source, chunksize=chunksize)
+        yield from reader
+    except (
+        OSError,
+        ValueError,
+        pd.errors.ParserError,
+        pd.errors.EmptyDataError,
+    ) as exc:
         raise InputFileError(f"Could not read input file '{source}': {exc}") from exc
 
 

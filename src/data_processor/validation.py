@@ -93,10 +93,12 @@ def _is_allowed(value: object, allowed: list[object]) -> bool:
 
 
 def validate_dataframe(
-    dataframe: pd.DataFrame, config: dict[str, dict[str, Any]]
+    dataframe: pd.DataFrame,
+    config: dict[str, dict[str, Any]],
+    start_row: int = 2,
 ) -> list[ValidationError]:
     errors: list[ValidationError] = []
-    for row_number, (_, record) in enumerate(dataframe.iterrows(), start=2):
+    for row_number, (_, record) in enumerate(dataframe.iterrows(), start=start_row):
         for column, rules in config.items():
             value = record[column] if column in dataframe.columns else None
             if _missing(value):
