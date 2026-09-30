@@ -3,6 +3,7 @@
 import math
 import re
 from dataclasses import asdict, dataclass
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 import numpy as np
@@ -27,6 +28,8 @@ class ValidationError:
         else:
             if isinstance(value, np.generic):
                 value = value.item()
+            if isinstance(value, float) and not math.isfinite(value):
+                value = str(value)
             if not isinstance(value, (str, int, float, bool, type(None))):
                 value = str(value)
             data["value"] = value
@@ -36,16 +39,28 @@ class ValidationError:
 def _missing(value: object) -> bool:
     if value is None:
         return True
+    if isinstance(value, str) and not value.strip():
+        return True
     missing = pd.isna(value)
     return bool(missing) if pd.api.types.is_scalar(missing) else False
 
 
 def _number(value: object, integer: bool = False) -> float | int | None:
-    if isinstance(value, bool):
+    if isinstance(value, (bool, np.bool_)):
         return None
+    if integer and isinstance(value, (int, np.integer)):
+        return int(value)
+    if integer and isinstance(value, str):
+        try:
+            decimal = Decimal(value.strip())
+        except (InvalidOperation, ValueError):
+            return None
+        if not decimal.is_finite() or decimal != decimal.to_integral_value():
+            return None
+        return int(decimal)
     try:
         number = float(value)
-    except (TypeError, ValueError):
+    except (OverflowError, TypeError, ValueError):
         return None
     if not math.isfinite(number):
         return None
@@ -62,12 +77,26 @@ def _error(
     )
 
 
+def _is_allowed(value: object, allowed: list[object]) -> bool:
+    for candidate in allowed:
+        try:
+            matches = value == candidate
+        except (TypeError, ValueError):
+            continue
+        if pd.api.types.is_scalar(matches):
+            try:
+                if bool(matches):
+                    return True
+            except (TypeError, ValueError):
+                continue
+    return False
+
+
 def validate_dataframe(
     dataframe: pd.DataFrame, config: dict[str, dict[str, Any]]
 ) -> list[ValidationError]:
     errors: list[ValidationError] = []
-    for index, record in dataframe.iterrows():
-        row_number = int(index) + 2  # CSV-style row number including the header.
+    for row_number, (_, record) in enumerate(dataframe.iterrows(), start=2):
         for column, rules in config.items():
             value = record[column] if column in dataframe.columns else None
             if _missing(value):
@@ -170,7 +199,7 @@ def validate_dataframe(
                             f"{column} is too long",
                         )
                     )
-            if "allowed" in rules and value not in rules["allowed"]:
+            if "allowed" in rules and not _is_allowed(value, rules["allowed"]):
                 errors.append(
                     _error(
                         row_number,

@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from data_processor.cli import main
 
 
@@ -63,3 +65,35 @@ def test_cli_configuration_failure_returns_one(tmp_path: Path) -> None:
         )
         == 1
     )
+
+
+@pytest.mark.parametrize("collision", ["input", "output", "config"])
+def test_cli_rejects_report_path_collisions(tmp_path: Path, collision: str) -> None:
+    data, config = _files(tmp_path, "email\nnot-an-email\n")
+    output = tmp_path / "clean.csv"
+    paths = {"input": data, "output": output, "config": config}
+
+    code = main(
+        [
+            str(data),
+            "--config",
+            str(config),
+            "--output",
+            str(output),
+            "--report",
+            str(paths[collision]),
+        ]
+    )
+
+    assert code == 1
+    assert data.read_text(encoding="utf-8") == "email\nnot-an-email\n"
+    assert "required: true" in config.read_text(encoding="utf-8")
+    if collision == "output":
+        assert not output.exists()
+
+
+def test_cli_rejects_output_overwriting_config(tmp_path: Path) -> None:
+    data, config = _files(tmp_path, "email\nada@example.com\n")
+
+    assert main([str(data), "--config", str(config), "--output", str(config)]) == 1
+    assert "required: true" in config.read_text(encoding="utf-8")

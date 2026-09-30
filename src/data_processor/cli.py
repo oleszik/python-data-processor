@@ -7,7 +7,7 @@ from pathlib import Path
 
 from data_processor.cleaning import clean_data, inspect_dataset
 from data_processor.config import load_validation_config
-from data_processor.errors import DataProcessorError
+from data_processor.errors import ConfigurationError, DataProcessorError
 from data_processor.io import export_dataset, load_dataset
 from data_processor.reporting import build_summary, format_summary
 from data_processor.validation import validate_dataframe
@@ -21,6 +21,30 @@ logger = logging.getLogger(__name__)
 EXIT_SUCCESS = 0
 EXIT_APPLICATION_ERROR = 1
 EXIT_VALIDATION_ERROR = 2
+
+
+def _validate_file_paths(
+    input_path: Path,
+    output_path: Path,
+    config_path: Path | None,
+    report_path: Path | None,
+) -> None:
+    if config_path is not None and output_path.resolve() == config_path.resolve():
+        raise ConfigurationError(
+            "Output and validation config paths must be different."
+        )
+    if report_path is None:
+        return
+    other_paths = {
+        "input": input_path,
+        "output": output_path,
+        "validation config": config_path,
+    }
+    for label, path in other_paths.items():
+        if path is not None and report_path.resolve() == path.resolve():
+            raise ConfigurationError(
+                f"Validation report and {label} paths must be different."
+            )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -58,6 +82,7 @@ def main(argv: list[str] | None = None) -> int:
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     try:
+        _validate_file_paths(args.input, args.output, args.config, args.report)
         original = load_dataset(args.input)
         logger.info("Loaded %s", inspect_dataset(original))
         cleaned, stats = clean_data(

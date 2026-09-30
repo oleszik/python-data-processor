@@ -59,6 +59,9 @@ Exit codes:
 - `1`: application, input/output, or configuration failure.
 - `2`: processing completed, but one or more rows failed validation.
 
+Invalid command-line usage is handled by `argparse`, which also exits with status `2`
+before processing starts.
+
 The JSON report contains `total_rows_processed`, `valid_rows`, `invalid_rows`, `total_validation_errors`, `errors_by_column`, and detailed `errors`.
 
 ## Project structure
