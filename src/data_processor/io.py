@@ -51,7 +51,12 @@ def load_csv_chunks(path: str | Path, chunksize: int) -> Iterator[pd.DataFrame]:
         raise InputFileError(f"Input file does not exist: {source}")
     try:
         reader = pd.read_csv(source, chunksize=chunksize)
-        yield from reader
+        found_chunk = False
+        for chunk in reader:
+            found_chunk = True
+            yield chunk
+        if not found_chunk:
+            yield pd.read_csv(source, nrows=0)
     except (
         OSError,
         ValueError,
